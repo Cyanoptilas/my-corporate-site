@@ -1,0 +1,38 @@
+---
+import { ClientRouter } from "astro:transitions";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import "../styles/global.css";
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "A minimalist corporate site built with Astro." } =
+	Astro.props;
+---
+
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<ClientRouter />
+	</head>
+	<body
+		class="bg-brand-white text-brand-black antialiased selection:bg-black selection:text-white"
+	>
+		<Header />
+
+		<main class="min-h-screen pt-24">
+			<slot />
+		</main>
+
+		<Footer />
+	</body>
+</html>

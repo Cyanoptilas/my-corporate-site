@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  /* Minimal & Monotone Color Palette */
+  --color-brand-black: #0a0a0a;
+  --color-brand-white: #ffffff;
+  --color-brand-gray: #f4f4f4;
+  --color-brand-dark-gray: #333333;
+  --color-brand-orange: #f97316;
+  --color-brand-yellow: #eab308;
+
+  /* Typography */
+  --font-family-display: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  --font-family-body: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+}
+
+:root {
+  --font-display: var(--font-family-display);
+  --font-body: var(--font-family-body);
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-brand-white);
+  color: var(--color-brand-black);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Utilities for the "Large Typography" vibe */
+.text-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection Color */
+::selection {
+  background-color: var(--color-brand-black);
+  color: var(--color-brand-white);
+}

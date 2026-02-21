@@ -1,0 +1,100 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getNewsList } from "../../lib/microcms";
+
+export async function getStaticPaths({ paginate }) {
+    const response = await getNewsList({
+        limit: 100,
+        fields: ["id", "title", "publishedAt", "category"],
+    });
+    return paginate(response.contents, { pageSize: 10 });
+}
+
+const { page } = Astro.props;
+---
+
+<Layout title="News Archive - MY CORP">
+    <section class="py-24 px-8 max-w-7xl mx-auto">
+        <h1
+            class="text-6xl md:text-9xl font-bold tracking-tighter leading-none mb-16"
+        >
+            NEWS
+        </h1>
+
+        <div class="divide-y divide-gray-200 mb-16">
+            {
+                page.data.length === 0 ? (
+                    <p class="py-8 text-gray-500">No news found.</p>
+                ) : (
+                    page.data.map((item) => (
+                        <article class="py-12 group">
+                            <a href={`/news/${item.id}`} class="block">
+                                <div class="flex flex-col md:flex-row md:items-baseline justify-between gap-4 mb-4">
+                                    <time
+                                        class="text-sm text-gray-400 font-mono"
+                                        datetime={item.publishedAt}
+                                    >
+                                        {new Date(
+                                            item.publishedAt,
+                                        ).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "2-digit",
+                                            day: "2-digit",
+                                        })}
+                                    </time>
+                                    {item.category && (
+                                        <span class="text-xs uppercase tracking-widest text-gray-400 border border-gray-200 px-2 py-1 rounded-full">
+                                            {item.category.name}
+                                        </span>
+                                    )}
+                                </div>
+                                <h2 class="text-2xl md:text-4xl font-bold group-hover:text-brand-orange transition-colors">
+                                    {item.title}
+                                </h2>
+                            </a>
+                        </article>
+                    ))
+                )
+            }
+        </div>
+
+        <!-- Pagination -->
+        <nav
+            class="flex justify-between items-center text-sm font-bold uppercase tracking-widest border-t border-gray-200 pt-8"
+        >
+            {
+                page.url.prev ? (
+                    <a
+                        href={page.url.prev}
+                        class="hover:text-brand-orange transition-colors"
+                    >
+                        &larr; Previous
+                    </a>
+                ) : (
+                    <span class="text-gray-300 cursor-not-allowed">
+                        &larr; Previous
+                    </span>
+                )
+            }
+
+            <span class="text-gray-400 font-mono font-normal normal-case">
+                Page {page.currentPage} of {page.lastPage}
+            </span>
+
+            {
+                page.url.next ? (
+                    <a
+                        href={page.url.next}
+                        class="hover:text-brand-orange transition-colors"
+                    >
+                        Next &rarr;
+                    </a>
+                ) : (
+                    <span class="text-gray-300 cursor-not-allowed">
+                        Next &rarr;
+                    </span>
+                )
+            }
+        </nav>
+    </section>
+</Layout>
