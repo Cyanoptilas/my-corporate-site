@@ -1,8 +1,8 @@
 import { createClient, type MicroCMSQueries } from "microcms-js-sdk";
 
 const client = createClient({
-  serviceDomain: import.meta.env.MICROCMS_SERVICE_DOMAIN || "YOUR_DOMAIN",
-  apiKey: import.meta.env.MICROCMS_API_KEY || "YOUR_API_KEY",
+  serviceDomain: import.meta.env.MICROCMS_SERVICE_DOMAIN || (typeof process !== "undefined" && process.env.MICROCMS_SERVICE_DOMAIN) || "YOUR_DOMAIN",
+  apiKey: import.meta.env.MICROCMS_API_KEY || (typeof process !== "undefined" && process.env.MICROCMS_API_KEY) || "YOUR_API_KEY",
 });
 
 export type News = {
