@@ -9,20 +9,18 @@ const links = [
 ---
 
 <header
-    class="fixed top-0 left-0 w-full z-50 mix-blend-difference text-white py-6 px-8 flex justify-between items-center bg-transparent pointer-events-none"
+    class="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 text-brand-black py-4 px-8 flex justify-between items-center transition-all duration-300"
 >
-    <a href="/" class="text-xl font-bold tracking-tighter pointer-events-auto">
-        MY CORP
-    </a>
+    <a href="/" class="text-xl font-black tracking-tighter"> MY CORP </a>
 
-    <nav class="pointer-events-auto">
+    <nav>
         <ul class="flex gap-8">
             {
                 links.map((link) => (
                     <li>
                         <a
                             href={link.href}
-                            class="text-sm uppercase tracking-widest hover:text-brand-orange transition-colors"
+                            class="text-sm font-bold uppercase tracking-widest hover:text-brand-orange transition-colors"
                         >
                             {link.label}
                         </a>
