@@ -1,6 +1,6 @@
-# Header リンク動的生成タスク
+# microCMS フォーム連携実装タスク
 
-- [x] `src/components/Header.astro` を改修し、`Astro.glob` または `import.meta.glob` を使用して `src/pages` 内の `.astro` ファイルを動的に取得する。
-- [x] 取得したファイル一覧から、動的ルーティング (`[...]` や `[id]`) などの不要なページを除外するフィルター処理を実装する。
-- [x] `#services` や `#about` のようなアンカーリンク（ページ内リンク）をどのように扱うか設計し、実装に組み込む（※動的取得ではアンカーはとれないため、ハードコードとのハイブリッド等の検討が必要）。
-- [x] 実際に動的生成されたリンクが正しく機能するか確認する。
+- [x] `functions/api/submit.ts` を修正し、送信データを microCMS のエンドポイント(`contacts`)に POST する処理を実装する。
+- [x] `docs/deployment_guide.md` に microCMS の `contacts` スキーマ設定方法（必須／任意項目の定義など）を追記する。
+- [x] `docs/project_overview.md` の「サーバーレスなフォームハンドリング」の記述を、microCMSに直接保存する仕様に合わせて更新する。
+- [x] ユーザールールに従い、各種アーティファクト（タスク、計画、報告）を `docs/corporate_site_poc/` 配下にコピー保存する。

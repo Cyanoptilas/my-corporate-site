@@ -1,29 +1,23 @@
-# Headerリンク動的生成の実装計画
+# お問い合わせフォームの microCMS 連携計画
 
 ## 目的 (Goal)
-現在 `src/components/Header.astro` にハードコードされているナビゲーションリンクを、`src/pages` ディレクトリ内の `.astro` ファイル一覧から自動的（動的）に生成する仕組みに変更する。
+現在、コンソールへのログ出力のみとなっているお問い合わせフォームのデータを、実際に microCMS の指定エンドポイント（`contacts` 等）へ POST し、管理画面内で問い合わせ内容を確認・保存できるようにする。これに伴い、設計ドキュメントやデプロイ手順書も最新の実装内容に合わせて更新する。
 
-## 課題とアプローチ
+## Proposed Changes (変更予定)
 
-### 課題
-単に `src/pages` 以下のファイルを自動取得するだけでは、以下の問題が発生します。
-1. **動的ルーティングファイルの混入**: `news/[id].astro` や `news/[...page].astro` がそのままリンクとして取得されてしまう。
-2. **ページ内リンク（アンカー）の消失**: 現在設定されている `/#services` や `/#about` のような「同一ページ内の特定セクションへのリンク」は、ファイルベースの自動取得ではそもそも生成できない。
-3. **表示名（Label）の制御**: URLパス（例: `/contact`）からそのままラベルを作ると "Contact" になるが、任意の日本語ラベルなどにしたい場合の制御が難しい。
+### バックエンドAPIの実装
+#### [MODIFY] [submit.ts](file:///c:/Development/my-corporate-site/functions/api/submit.ts)
+- `fetch` を使用して microCMS の `POST` API を呼び出し、バリデーションを経た `name`, `email`, `subject`, `message` の各データを送信する処理を追加します。
+- `X-MICROCMS-API-KEY` ヘッダーを用いて認証を行います。
+- APIキーとサービスドメインは、環境変数から取得します（※Cloudflare Pages環境では `context.env.MICROCMS_API_KEY` のように取得する必要があります）。
 
-### 解決策 (Proposed Changes)
-Vite の機能である `import.meta.glob` を使用してファイル一覧を取得しつつ、**「自動取得ファイル情報」と「手動で足したいアンカーリンク情報」をマージするハイブリッドな手法**を実装します。
+### ドキュメントの更新
+#### [MODIFY] [deployment_guide.md](file:///c:/Development/my-corporate-site/docs/deployment_guide.md)
+- 「2.1 microCMS の設定」セクションに、新しく作成する `contacts` (お問い合わせ用) スキーマ（名前、メールアドレス、件名、本文）の作成手順を追記します。
+- 「4. カスタマイズ」セクションなどにある「現在はログ出力のみ」という記述を削除・修正します。
 
-#### [MODIFY] [Header.astro](file:///c:/Development/my-corporate-site/src/components/Header.astro)
-1. `import.meta.glob('/src/pages/**/*.astro')` を使ってファイルパス一覧を取得。
-2. 以下のようなフィルターをかける：
-   - パスから `/src/pages` と `.astro` を削除し、Web上のURLパスに変換（例: `/contact`）。
-   - `[id]` や `[...page]` が含まれる動的ルートファイルを除外。
-   - `index.astro` は `/` に変換。
-3. 取得したURL一覧をもとに、`label` を パス名から自動生成（先頭大文字化など）する。
-4. 本プロジェクト特有のアンカーリンク（`/#services`, `/#about`）を、固定配列として用意し、自動取得したリストに結合（concat）して表示する。
+#### [MODIFY] [project_overview.md](file:///c:/Development/my-corporate-site/docs/project_overview.md)
+- 「3.2 サーバーレスなフォームハンドリング」の項目を、フォームの送信内容が直接 microCMS 内部へ蓄積される（データベース等を用意せずCMSで一元管理される）アーキテクチャである旨の内容に更新します。
 
-## Verification Plan
-1. ブラウザで確認し、Home, News, Contact などのページリンクが自動生成されていること。
-2. Services, About のアンカーリンクも失われずに表示されていること。
-3. 動的ルーティング用の不要なURL（`[id]` など）が表示されていないこと。
+### アーティファクトの保存
+- ユーザールールに従い、変更が完了したのちに本チャットで生成した `task.md`, `implementation_plan.md`, `walkthrough.md` をプロジェクトの `docs/corporate_site_poc/` 配下にコピーします。

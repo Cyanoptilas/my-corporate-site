@@ -1,96 +1,172 @@
 ---
+import type { GetStaticPaths, InferGetStaticPropsType, Page } from "astro";
 import Layout from "../../layouts/Layout.astro";
-import { getNewsList } from "../../lib/microcms";
+import { getNewsList, type News } from "../../lib/microcms";
 
-export async function getStaticPaths({ paginate }) {
+export const getStaticPaths = (async ({ paginate }) => {
     const response = await getNewsList({
         limit: 100,
-        fields: ["id", "title", "publishedAt", "category"],
+        fields: ["id", "title", "publishedAt", "category", "eyecatch"],
     });
-    return paginate(response.contents, { pageSize: 10 });
-}
+    return paginate(response.contents, { pageSize: 9 });
+}) satisfies GetStaticPaths;
 
-const { page } = Astro.props;
+type Props = {
+    page: Page<News>;
+};
+
+const { page } = Astro.props as Props;
 ---
 
 <Layout title="News Archive - MY CORP">
     <section class="py-24 px-8 max-w-7xl mx-auto">
-        <h1
-            class="text-6xl md:text-9xl font-bold tracking-tighter leading-none mb-16"
-        >
-            NEWS
-        </h1>
+        <header class="mb-16 text-center md:text-left">
+            <h1
+                class="text-5xl md:text-8xl font-black tracking-tighter leading-none mb-4 text-gray-900"
+            >
+                LATEST <span class="text-brand-orange">NEWS</span>
+            </h1>
+            <p class="text-xl text-gray-500 font-medium tracking-wide">
+                Stay updated with our latest announcements.
+            </p>
+        </header>
 
-        <div class="divide-y divide-gray-200 mb-16">
-            {
-                page.data.length === 0 ? (
-                    <p class="py-8 text-gray-500">No news found.</p>
-                ) : (
-                    page.data.map((item) => (
-                        <article class="py-12 group">
-                            <a href={`/news/${item.id}`} class="block">
-                                <div class="flex flex-col md:flex-row md:items-baseline justify-between gap-4 mb-4">
-                                    <time
-                                        class="text-sm text-gray-400 font-mono"
-                                        datetime={item.publishedAt}
-                                    >
-                                        {new Date(
-                                            item.publishedAt,
-                                        ).toLocaleDateString("en-US", {
-                                            year: "numeric",
-                                            month: "2-digit",
-                                            day: "2-digit",
-                                        })}
-                                    </time>
-                                    {item.category && (
-                                        <span class="text-xs uppercase tracking-widest text-gray-400 border border-gray-200 px-2 py-1 rounded-full">
+        {
+            page.data.length === 0 ? (
+                <div class="py-20 text-center bg-gray-50 rounded-3xl border border-gray-100">
+                    <p class="text-xl text-gray-400 font-medium">
+                        No news found.
+                    </p>
+                </div>
+            ) : (
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                    {page.data.map((item) => (
+                        <article
+                            class="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 flex flex-col h-full cursor-pointer relative"
+                            onclick={`window.location.href='/news/${item.id}'`}
+                        >
+                            {/* Image Container */}
+                            <div class="relative aspect-[4/3] w-full bg-gray-100 overflow-hidden">
+                                {item.eyecatch ? (
+                                    <img
+                                        src={item.eyecatch.url}
+                                        alt={item.title}
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                                        loading="lazy"
+                                    />
+                                ) : (
+                                    <div class="w-full h-full flex flex-col items-center justify-center text-gray-300 bg-gray-50">
+                                        <svg
+                                            class="w-12 h-12 mb-2 opacity-50"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="1.5"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                            />
+                                        </svg>
+                                        <span class="text-sm font-medium tracking-wider">
+                                            NO IMAGE
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Absolute Category Badge inside Image */}
+                                {item.category && (
+                                    <div class="absolute top-4 left-4 z-10">
+                                        <span class="bg-brand-orange text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-md backdrop-blur-sm bg-opacity-95">
                                             {item.category.name}
                                         </span>
-                                    )}
-                                </div>
-                                <h2 class="text-2xl md:text-4xl font-bold group-hover:text-brand-orange transition-colors">
-                                    {item.title}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Content Container */}
+                            <div class="p-6 md:p-8 flex flex-col flex-grow">
+                                <time
+                                    class="text-sm text-gray-400 font-mono mb-3 block flex-shrink-0"
+                                    datetime={item.publishedAt}
+                                >
+                                    {new Date(
+                                        item.publishedAt,
+                                    ).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                    })}
+                                </time>
+
+                                <h2 class="text-xl md:text-2xl font-bold leading-tight text-gray-900 group-hover:text-brand-orange transition-colors line-clamp-3 mb-4 flex-grow">
+                                    <a
+                                        href={`/news/${item.id}`}
+                                        class="before:absolute before:inset-0"
+                                    >
+                                        {item.title}
+                                    </a>
                                 </h2>
-                            </a>
+
+                                <div class="mt-auto pt-4 flex items-center text-sm font-bold text-gray-400 group-hover:text-brand-orange transition-colors">
+                                    READ MORE
+                                    <svg
+                                        class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
                         </article>
-                    ))
-                )
-            }
-        </div>
+                    ))}
+                </div>
+            )
+        }
 
         <!-- Pagination -->
         <nav
-            class="flex justify-between items-center text-sm font-bold uppercase tracking-widest border-t border-gray-200 pt-8"
+            class="flex justify-between items-center text-sm font-bold uppercase tracking-widest border-t-2 border-gray-100 pt-8 mt-12"
         >
             {
                 page.url.prev ? (
                     <a
                         href={page.url.prev}
-                        class="hover:text-brand-orange transition-colors"
+                        class="px-6 py-3 rounded-full hover:bg-gray-100 hover:text-brand-orange transition-all duration-200"
                     >
-                        &larr; Previous
+                        &larr; Prev
                     </a>
                 ) : (
-                    <span class="text-gray-300 cursor-not-allowed">
-                        &larr; Previous
+                    <span class="px-6 py-3 text-gray-300 cursor-not-allowed">
+                        &larr; Prev
                     </span>
                 )
             }
 
-            <span class="text-gray-400 font-mono font-normal normal-case">
-                Page {page.currentPage} of {page.lastPage}
+            <span
+                class="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg font-mono font-medium normal-case"
+            >
+                {page.currentPage} / {page.lastPage}
             </span>
 
             {
                 page.url.next ? (
                     <a
                         href={page.url.next}
-                        class="hover:text-brand-orange transition-colors"
+                        class="px-6 py-3 rounded-full hover:bg-gray-100 hover:text-brand-orange transition-all duration-200"
                     >
                         Next &rarr;
                     </a>
                 ) : (
-                    <span class="text-gray-300 cursor-not-allowed">
+                    <span class="px-6 py-3 text-gray-300 cursor-not-allowed">
                         Next &rarr;
                     </span>
                 )
