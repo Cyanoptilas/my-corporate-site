@@ -34,5 +34,38 @@ const { title, description = "A minimalist corporate site built with Astro." } =
 		</main>
 
 		<Footer />
+
+		<script>
+			// Set up Intersection Observer for scroll animations
+			function initReveal() {
+				const reveals = document.querySelectorAll(".reveal");
+
+				const observer = new IntersectionObserver(
+					(entries) => {
+						entries.forEach((entry) => {
+							if (entry.isIntersecting) {
+								entry.target.classList.add("is-visible");
+								// Optional: unobserve if you only want it to animate once
+								observer.unobserve(entry.target);
+							}
+						});
+					},
+					{
+						rootMargin: "0px 0px -100px 0px", // Trigger slightly before it comes fully into view
+						threshold: 0.1,
+					},
+				);
+
+				reveals.forEach((reveal) => {
+					observer.observe(reveal);
+				});
+			}
+
+			// Run on initial load
+			initReveal();
+
+			// Run on View Transition navigation
+			document.addEventListener("astro:after-swap", initReveal);
+		</script>
 	</body>
 </html>

@@ -1,6 +1,9 @@
-# microCMS フォーム連携実装タスク
+# アニメーション実装タスク
 
-- [x] `functions/api/submit.ts` を修正し、送信データを microCMS のエンドポイント(`contacts`)に POST する処理を実装する。
-- [x] `docs/deployment_guide.md` に microCMS の `contacts` スキーマ設定方法（必須／任意項目の定義など）を追記する。
-- [x] `docs/project_overview.md` の「サーバーレスなフォームハンドリング」の記述を、microCMSに直接保存する仕様に合わせて更新する。
-- [x] ユーザールールに従い、各種アーティファクト（タスク、計画、報告）を `docs/corporate_site_poc/` 配下にコピー保存する。
+- [x] アニメーションのアプローチ（CSSベースかライブラリベースか等）についてユーザーの合意を得る。
+- [x] `src/styles/global.css` に必要な `@keyframes` やアニメーション用ユーティリティクラスを追加する。
+- [x] 共通スクロール監視ロジック（`IntersectionObserver`など）を `src/layouts/Layout.astro` 等に実装する。
+- [x] `src/pages/index.astro` の各セクション（Hero, Services, Newsなど）にアニメーションを適用する。
+- [x] `src/pages/news/[...page].astro` の一覧カードなどにリッチなホバーエフェクト（画像のズーム等）を追加する。
+- [x] (本番前確認) すべてのページでアニメーションが想定通り動作するかローカルで確認する。
+- [x] アーティファクトを `docs/corporate_site_poc/` 配下にコピー保存する。

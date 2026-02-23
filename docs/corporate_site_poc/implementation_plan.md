@@ -1,23 +1,57 @@
-# お問い合わせフォームの microCMS 連携計画
+# サイトのリッチ化（アニメーション追加）計画
 
-## 目的 (Goal)
-現在、コンソールへのログ出力のみとなっているお問い合わせフォームのデータを、実際に microCMS の指定エンドポイント（`contacts` 等）へ POST し、管理画面内で問い合わせ内容を確認・保存できるようにする。これに伴い、設計ドキュメントやデプロイ手順書も最新の実装内容に合わせて更新する。
+現在「軽量・最速（Zero JS）」を重視した構成になっていますが、ご要望の「重くしたい（＝リッチで動的な体験を提供したい）」という目的に合わせ、いくつかのアプローチを提案します。
 
-## Proposed Changes (変更予定)
+## ターゲット・方針 (Where & What)
 
-### バックエンドAPIの実装
-#### [MODIFY] [submit.ts](file:///c:/Development/my-corporate-site/functions/api/submit.ts)
-- `fetch` を使用して microCMS の `POST` API を呼び出し、バリデーションを経た `name`, `email`, `subject`, `message` の各データを送信する処理を追加します。
-- `X-MICROCMS-API-KEY` ヘッダーを用いて認証を行います。
-- APIキーとサービスドメインは、環境変数から取得します（※Cloudflare Pages環境では `context.env.MICROCMS_API_KEY` のように取得する必要があります）。
+サイトに「重厚感」「モダンさ」「リッチな体験」を持たせるには、以下の3つの要素にアニメーションを追加するのが効果的です。
 
-### ドキュメントの更新
-#### [MODIFY] [deployment_guide.md](file:///c:/Development/my-corporate-site/docs/deployment_guide.md)
-- 「2.1 microCMS の設定」セクションに、新しく作成する `contacts` (お問い合わせ用) スキーマ（名前、メールアドレス、件名、本文）の作成手順を追記します。
-- 「4. カスタマイズ」セクションなどにある「現在はログ出力のみ」という記述を削除・修正します。
+### 1. ファーストビュー（Heroセクション）の強化
+**場所**: `src/pages/index.astro` の一番上 (`<h1>WE BUILD THE FUTURE.</h1>` の部分)
+**内容**: ページを開いた瞬間に、テキストが下からフワッと順番に現れる（Staggered Fade-In）アニメーションや、背景の微細なパーティクル・グラデーションアニメーションを入れることで、一気に「作り込まれたサイト」感が出ます。
 
-#### [MODIFY] [project_overview.md](file:///c:/Development/my-corporate-site/docs/project_overview.md)
-- 「3.2 サーバーレスなフォームハンドリング」の項目を、フォームの送信内容が直接 microCMS 内部へ蓄積される（データベース等を用意せずCMSで一元管理される）アーキテクチャである旨の内容に更新します。
+### 2. スクロール連動アニメーション (Scroll Reveal)
+**場所**: `index.astro` の Services, About, Latest News セクション、および各種ページのコンテンツ部分。
+**内容**: ユーザーが下にスクロールし、要素が画面内に入ってきた瞬間に「スッと浮き上がる」「横からスライドしてくる」といった動きをつけます。これがあるとサイト全体に「重み」や「高級感」が生まれます。
 
-### アーティファクトの保存
-- ユーザールールに従い、変更が完了したのちに本チャットで生成した `task.md`, `implementation_plan.md`, `walkthrough.md` をプロジェクトの `docs/corporate_site_poc/` 配下にコピーします。
+### 3. マイクロインタラクションの強化（ホバーエフェクト）
+**場所**: ニュースカード (`news/[...page].astro`) やボタン (`contact.astro`)、ヘッダーリンク。
+**内容**: 現状の色変更（例: 黒→オレンジ）だけでなく、画像が少しズームする、矢印アイコンがスライドする、ボタン背景が波紋のように広がるなど、触ったときの反応をリッチにします。
+
+---
+
+## 実装アプローチの選択肢 (How)
+
+「どの程度JSをガッツリ使うか」によって3つのレベルがあります。
+
+### Level 1: Tailwind CSSのみで作る（おすすめ・高コスパ）
+Astroの強み（速さ）を殺さずにリッチにする方法です。
+- `global.css` または `tailwind.config` に独自の `@keyframes` (fade-in-up など) を定義。
+- `IntersectionObserver` という軽量な標準ブラウザAPIを使って、スクロール時にその Tailwind クラスを付与する仕組みだけを数十行のVanilla JSで実装。
+
+### Level 2: アニメーション特化ライブラリ (GSAP) を入れる
+「重くしてでもゴリゴリ動かしたい」「Appleのサイトのようなスクロールパララックス（視差効果）や、スクロールに応じた複雑な要素の移動がしたい」場合。
+- **GSAP (GreenSock)** と **ScrollTrigger** プラグインを導入します（JSサイズが大きくなり、サイトは物理的にも「重く」なります）。
+- タイポグラフィを一文字ずつバラバラに動かす等、限界までリッチにできます。
+
+### Level 3: 3Dやキャンバスを入れる
+- サイトの背景に Three.js (WebGL) を使った動的な3Dオブジェクトを配置します。最高レベルに重く・リッチになります。
+
+---
+
+## 提案する実装ステップ（Level 1ベースのカスタム）
+
+まずは以下の「CSS拡張＋軽量JSでのスクロール連動」から実装し、様子を見るのはいかがでしょうか？
+
+#### [MODIFY] `src/styles/global.css`
+- `fade-in-up`, `slide-in` などのアニメーション用 `@keyframes` とユーティリティクラス（`animate-on-scroll` など）を追加。
+
+#### [MODIFY] `src/layouts/Layout.astro`
+- 全ページで動作する、スクロール監視用の軽量JavaScript（`IntersectionObserver`）を追加。
+
+#### [MODIFY] `src/pages/index.astro` & `news/[...page].astro`
+- 各要素（見出し、カード、ボタン）にアニメーション初期状態のクラス（`opacity-0 translate-y-8` 等）を付与し、スクロールされると解除する設定を追加。
+- ニュース一覧の画像を、ホバー時に少しズームアップ（`scale-105`）するように強化。
+
+## レビュー依頼
+どの方向性（Level 1~3）で実装を進めるか、または特定の場所（ここをこう動かしたい！）というご希望はございますか？

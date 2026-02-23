@@ -45,3 +45,76 @@ html {
   background-color: var(--color-brand-black);
   color: var(--color-brand-white);
 }
+
+/* Reveal Animation Base */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Reveal variants */
+.reveal.fade-left {
+  transform: translateX(-30px);
+}
+
+.reveal.fade-left.is-visible {
+  transform: translateX(0);
+}
+
+.reveal.fade-right {
+  transform: translateX(30px);
+}
+
+.reveal.fade-right.is-visible {
+  transform: translateX(0);
+}
+
+/* Stagger delays */
+@layer utilities {
+  .delay-100 {
+    transition-delay: 100ms;
+  }
+
+  .delay-200 {
+    transition-delay: 200ms;
+  }
+
+  .delay-300 {
+    transition-delay: 300ms;
+  }
+
+  .delay-400 {
+    transition-delay: 400ms;
+  }
+
+  .delay-500 {
+    transition-delay: 500ms;
+  }
+}
+
+/* Initial Hero Animation (loads immediately without observer) */
+@keyframes fadeInUpHero {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero {
+  animation: fadeInUpHero 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}

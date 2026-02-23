@@ -11,12 +11,14 @@ const { contents: news } = await getNewsList({ limit: 3 });
 		class="h-[80vh] flex flex-col justify-center px-8 max-w-7xl mx-auto"
 	>
 		<h1
-			class="text-6xl md:text-9xl font-bold tracking-tighter leading-none mb-8"
+			class="text-6xl md:text-9xl font-bold tracking-tighter leading-none mb-8 animate-hero"
 		>
 			WE BUILD <br />
 			<span class="text-brand-orange">THE FUTURE.</span>
 		</h1>
-		<p class="text-xl md:text-2xl max-w-2xl text-gray-600">
+		<p
+			class="text-xl md:text-2xl max-w-2xl text-gray-600 animate-hero delay-200"
+		>
 			We are a digital product studio delivering minimalist and
 			high-performance solutions.
 		</p>
@@ -24,7 +26,7 @@ const { contents: news } = await getNewsList({ limit: 3 });
 
 	<!-- Services Section -->
 	<section id="services" class="py-24 px-8 border-t border-gray-200">
-		<div class="max-w-7xl mx-auto">
+		<div class="max-w-7xl mx-auto reveal">
 			<h2
 				class="text-sm font-bold uppercase tracking-widest mb-12 text-gray-500"
 			>
@@ -32,7 +34,7 @@ const { contents: news } = await getNewsList({ limit: 3 });
 			</h2>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-16">
-				<div class="group cursor-pointer">
+				<div class="group cursor-pointer reveal fade-left delay-100">
 					<div
 						class="h-[1px] w-full bg-gray-200 mb-6 group-hover:bg-brand-orange transition-colors duration-500"
 					>
@@ -44,7 +46,7 @@ const { contents: news } = await getNewsList({ limit: 3 });
 					</p>
 				</div>
 
-				<div class="group cursor-pointer">
+				<div class="group cursor-pointer reveal fade-left delay-200">
 					<div
 						class="h-[1px] w-full bg-gray-200 mb-6 group-hover:bg-brand-orange transition-colors duration-500"
 					>
@@ -56,7 +58,7 @@ const { contents: news } = await getNewsList({ limit: 3 });
 					</p>
 				</div>
 
-				<div class="group cursor-pointer">
+				<div class="group cursor-pointer reveal fade-left delay-300">
 					<div
 						class="h-[1px] w-full bg-gray-200 mb-6 group-hover:bg-brand-orange transition-colors duration-500"
 					>
@@ -68,7 +70,7 @@ const { contents: news } = await getNewsList({ limit: 3 });
 					</p>
 				</div>
 
-				<div class="group cursor-pointer">
+				<div class="group cursor-pointer reveal fade-left delay-400">
 					<div
 						class="h-[1px] w-full bg-gray-200 mb-6 group-hover:bg-brand-orange transition-colors duration-500"
 					>
@@ -85,7 +87,7 @@ const { contents: news } = await getNewsList({ limit: 3 });
 
 	<!-- About Section -->
 	<section id="about" class="py-24 px-8 bg-black text-white">
-		<div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-16">
+		<div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 reveal">
 			<div class="md:w-1/3">
 				<h2
 					class="text-sm font-bold uppercase tracking-widest text-gray-500"
@@ -109,7 +111,7 @@ const { contents: news } = await getNewsList({ limit: 3 });
 
 	<!-- News Section -->
 	<section id="news" class="py-24 px-8 max-w-7xl mx-auto">
-		<div class="flex justify-between items-end mb-12">
+		<div class="flex justify-between items-end mb-12 reveal">
 			<h2
 				class="text-sm font-bold uppercase tracking-widest text-gray-500"
 			>
@@ -127,8 +129,10 @@ const { contents: news } = await getNewsList({ limit: 3 });
 				news.length === 0 ? (
 					<p class="py-8 text-gray-500">No news yet.</p>
 				) : (
-					news.map((item) => (
-						<article class="py-8 group">
+					news.map((item, index) => (
+						<article
+							class={`py-8 group reveal delay-${(index + 1) * 100}`}
+						>
 							<a
 								href={`/news/${item.id}`}
 								class="flex flex-col md:flex-row gap-4 md:items-center justify-between"
