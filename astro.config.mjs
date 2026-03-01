@@ -11,6 +11,7 @@ export default defineConfig({
     plugins: [tailwindcss()]
   },
 
+  output: 'static',
   adapter: cloudflare({
     imageService: 'compile'
   })
