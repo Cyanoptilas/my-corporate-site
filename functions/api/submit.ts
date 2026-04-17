@@ -1,8 +1,9 @@
-import type { APIRoute } from "astro";
+interface Env {
+    MICROCMS_SERVICE_DOMAIN: string;
+    MICROCMS_API_KEY: string;
+}
 
-export const prerender = false;
-
-export const POST: APIRoute = async ({ request, locals }) => {
+export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     try {
         const formData = await request.formData();
         const name = formData.get("name");
@@ -10,7 +11,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const subject = formData.get("subject");
         const message = formData.get("message");
 
-        // Validation (Basic)
         if (!name || !email || !subject || !message) {
             return new Response(JSON.stringify({ error: "Missing required fields" }), {
                 status: 400,
@@ -18,11 +18,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
             });
         }
 
-        // Cloudflare では runtime.env 経由でないと Dashboard で設定した secrets は読めない。
-        // ローカル開発 (astro dev) では runtime が無いので import.meta.env にフォールバックする。
-        const runtimeEnv = locals.runtime?.env as Record<string, string | undefined> | undefined;
-        const serviceDomain = runtimeEnv?.MICROCMS_SERVICE_DOMAIN ?? import.meta.env.MICROCMS_SERVICE_DOMAIN;
-        const apiKey = runtimeEnv?.MICROCMS_API_KEY ?? import.meta.env.MICROCMS_API_KEY;
+        const serviceDomain = env.MICROCMS_SERVICE_DOMAIN;
+        const apiKey = env.MICROCMS_API_KEY;
 
         if (!serviceDomain || !apiKey) {
             console.error("Missing microCMS environment variables");
