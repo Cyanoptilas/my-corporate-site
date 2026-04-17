@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
     try {
         const formData = await request.formData();
         const name = formData.get("name");
@@ -18,9 +18,11 @@ export const POST: APIRoute = async ({ request }) => {
             });
         }
 
-        // Use import.meta.env or process.env safely
-        const serviceDomain = import.meta.env.MICROCMS_SERVICE_DOMAIN || (typeof process !== "undefined" && process.env.MICROCMS_SERVICE_DOMAIN);
-        const apiKey = import.meta.env.MICROCMS_API_KEY || (typeof process !== "undefined" && process.env.MICROCMS_API_KEY);
+        // Cloudflare では runtime.env 経由でないと Dashboard で設定した secrets は読めない。
+        // ローカル開発 (astro dev) では runtime が無いので import.meta.env にフォールバックする。
+        const runtimeEnv = locals.runtime?.env as Record<string, string | undefined> | undefined;
+        const serviceDomain = runtimeEnv?.MICROCMS_SERVICE_DOMAIN ?? import.meta.env.MICROCMS_SERVICE_DOMAIN;
+        const apiKey = runtimeEnv?.MICROCMS_API_KEY ?? import.meta.env.MICROCMS_API_KEY;
 
         if (!serviceDomain || !apiKey) {
             console.error("Missing microCMS environment variables");

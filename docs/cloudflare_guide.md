@@ -27,44 +27,49 @@ Astro は基本設定では単なる「静的ファイル生成器」ですが�
 
 ---
 
-## 3. Cloudflare Pages Functions：サーバーレスバックエンド
+## 3. Astro SSR エンドポイント：サーバーレスバックエンド
 
 ただの「静的なサイト」では、お問い合わせフォームを作っても、ユーザーが入力したデータを受け取って処理する「サーバー（バックエンド）」がありません。
-通常なら別にサーバーを用意する必要がありますが、Cloudflare Pages には **Functions** という「サーバーレスの仕組み」が内蔵されています。
+本プロジェクトでは `@astrojs/cloudflare` アダプターを使い、Astro の SSR エンドポイントを Cloudflare Workers 上のサーバーレス関数としてデプロイしています。
 
-### 3.1 Functions の基本的な仕組み
-プロジェクト内の `functions/` フォルダの中に書いたファイルが、自動的にバックエンドのAPIとして動きます。サーバーを管理する手間は一切ありません。（サーバーレス）
+### 3.1 基本的な仕組み
+`src/pages/api/` 配下に置いた `.ts` ファイルが、自動的にバックエンドの API として動きます。ビルド時に Cloudflare 用の `_worker.js` にまとめられ、エッジで実行されます。（サーバーレス）
 
-### 3.2 実際のコードの解説 (`functions/api/submit.ts`)
+> 補足: Cloudflare Pages 単体では `functions/` フォルダが使えますが、`@astrojs/cloudflare` アダプターが `_worker.js` を生成する構成では `functions/` は無視されます。本プロジェクトでは Astro 側の API ルートに一本化しています。
+
+### 3.2 実際のコードの解説 (`src/pages/api/submit.ts`)
 本プロジェクトのお問い合わせフォーム（`contact.astro`）は、送信ボタンを押すとフロントエンドから `/api/submit` というURLへデータを投げます。
 
-それを受け止めるのが `functions/api/submit.ts` です。
+それを受け止めるのが `src/pages/api/submit.ts` です。
 
 ```typescript
-export async function onRequestPost({ request }) {
-  try {
-    // 1. データの受け取り
-    const formData = await request.formData();
-    const name = formData.get("name");
-    const email = formData.get("email");
-    ...
+import type { APIRoute } from "astro";
 
-    // 2. バリデーション（入力チェック）
-    if (!name || !email) {
-      return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
-    }
+export const prerender = false; // SSR（サーバーレス）で動かすためのフラグ
 
-    // 3. 処理（外部メールサービスへの送信や、データベースへの保存など）
-    console.log(`Received message from ${name}`);
+export const POST: APIRoute = async ({ request, locals }) => {
+  // 1. データの受け取り
+  const formData = await request.formData();
+  const name = formData.get("name");
+  const email = formData.get("email");
+  ...
 
-    // 4. フロントエンド（ブラウザ）へ「成功したよ！」と返事をする
-    return new Response(JSON.stringify({ message: "Success" }), { status: 200 });
-  } catch (err) { ... }
-}
+  // 2. バリデーション（入力チェック）
+  if (!name || !email) {
+    return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+  }
+
+  // 3. Cloudflare の環境変数は locals.runtime.env から取得する
+  const apiKey = locals.runtime?.env.MICROCMS_API_KEY;
+
+  // 4. 処理（microCMS への POST 等）
+  // 5. ブラウザへ「成功したよ！」と返事をする
+  return new Response(JSON.stringify({ message: "Success" }), { status: 200 });
+};
 ```
-- ファイルパスがそのままURLになります（`functions/api/submit.ts` -> `ドメイン/api/submit`）。
-- `onRequestPost` という関数で、HTTPの `POST` リクエスト（フォームからの送信）を受け取ります。
-- データの確認を行い、OKなら200番（成功）のレスポンスを返します。
+- ファイルパスがそのままURLになります（`src/pages/api/submit.ts` -> `ドメイン/api/submit`）。
+- `export const prerender = false;` を付けることで、このルートだけ静的化をスキップしサーバーレス関数として動作させます。
+- `POST` という関数で、HTTPの `POST` リクエスト（フォームからの送信）を受け取ります。
 
 ---
 
@@ -80,7 +85,7 @@ microCMSの APIキー のような「秘密のパスワード」は、絶対に�
 
 ### 4.2 本番環境 (Cloudflare Dashboard)
 本番環境には `.env` ファイルが存在しないため、Cloudflareの管理画面にログインし、「Pages > 設定 > 環境変数」のページで直接キーと値を手入力します。
-これにより、ビルド時やサーバー実行時に安全にAPIキーを利用することができます。
+SSR エンドポイントからは `locals.runtime.env.MICROCMS_API_KEY` の形で参照します（Dashboard の値はビルド時ではなくランタイムに注入されるため、`import.meta.env` では読めません）。
 
 ---
 
