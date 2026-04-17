@@ -7,6 +7,9 @@
 ```bash
 .
 ├── public/                 # 静的アセット
+├── functions/              # Cloudflare Pages Functions (サーバーレス API)
+│   └── api/
+│       └── submit.ts       # お問い合わせフォーム受け口
 ├── src/
 │   ├── components/         # 共通UIコンポーネント
 │   │   ├── Header.astro
@@ -16,8 +19,6 @@
 │   ├── lib/
 │   │   └── microcms.ts     # microCMS SDK クライアントと型定義
 │   ├── pages/
-│   │   ├── api/
-│   │   │   └── submit.ts   # お問い合わせフォーム受け口 (SSR API)
 │   │   ├── index.astro     # トップページ
 │   │   ├── contact.astro   # お問い合わせページ
 │   │   └── news/
@@ -62,11 +63,11 @@ npm run dev
 ```
 
 ブラウザで `http://localhost:4321` にアクセスしてページのデザインやルーティングを確認します。
-APIもAstro標準のSSR機能を使用しているため、`npm run dev` のままお問い合わせフォームのテストが可能です。
+お問い合わせフォームの API (`functions/api/submit.ts`) は Cloudflare Pages Functions として動作するため、ローカルで API 込みの挙動を確認したい場合は `npx wrangler pages dev -- npm run dev` のように Wrangler 経由で起動してください。
 
 ## 3. デプロイメント (Cloudflare Pages)
 
-このプロジェクトは `@astrojs/cloudflare` アダプターを使用するように設定されています。
+このプロジェクトは Astro で静的ビルド (`output: 'static'`) し、サーバー側の処理は Cloudflare Pages Functions (`functions/` フォルダ) で提供する構成です。
 
 ### 3.1 Cloudflare Pages への接続
 1. このリポジトリを GitHub / GitLab にプッシュします。
@@ -89,7 +90,7 @@ Cloudflare Pages の設定画面（設定 > 環境変数）で、`.env` ファ�
 - `MICROCMS_API_KEY`
 
 ### 3.4 API機能
-AstroのSSRサーバーエンドポイント機能を利用しているため、お問い合わせフォームは `/api/submit` で待機しています。Cloudflare Pages等にデプロイされた際も自動的にサーバーレス機能として動作します。
+お問い合わせフォームは Cloudflare Pages Functions として `functions/api/submit.ts` に実装されており、`/api/submit` で待機しています。ファイルパスがそのままエンドポイント URL になり、`env` 引数から Dashboard 側で設定したシークレットを受け取ります。
 
 ### 3.5 Webhook の設定 (コンテンツ更新時の自動デプロイ)
 このプロジェクトは SSG (静的サイト生成) で構築されているため、microCMS 側でコンテンツ（ニュース等）を更新しただけではサイトに反映されません。
@@ -110,7 +111,7 @@ AstroのSSRサーバーエンドポイント機能を利用しているため、
 
 - **スタイリング**: `src/styles/global.css` を編集して、テーマの変数（色、フォント）を変更します。
 - **アイコン**: ミニマルさを保つため、デフォルトではアイコンライブラリはインストールされていません。直接SVGを使用するか、`astro-icon` をインストールして使用してください。
-- **お問い合わせフォーム**: `src/pages/api/submit.ts` は現在、受信したデータを microCMS の `contacts` エンドポイントへ POST する設定になっています。必要に応じてメール通知（SendGrid等）などの追加連携ロジックをここに記述してください。
+- **お問い合わせフォーム**: `functions/api/submit.ts` は現在、受信したデータを microCMS の `contacts` エンドポイントへ POST する設定になっています。必要に応じてメール通知（SendGrid等）などの追加連携ロジックをここに記述してください。
 
 ## 5. パフォーマンス向上のヒント
 - microCMS では `.webp` などの最適化された画像を使用してください。
